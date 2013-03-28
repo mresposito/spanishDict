@@ -1,25 +1,23 @@
 import json, os, optparse
 from scraper  import *
+from model    import Dictionary
 
-class Dictionary:
+class Controller:
 
   jsonFile = "/Users/mre/myDict/dict.json"
-  dct = {}
 
   def __init__(self):
-    # read json
-    with open( self.jsonFile, "r" ) as f:
-      self.dct = json.loads(f.read())
-  
+    self.dct = Dictionary()
     # read cmdline
     self.parseCmdline()
 
-    actions = ['edit', 'delete', 'search', 'add', 'define']
+    actions = ['edit', 'delete', 'search', 'add', 'define', 'riddle', 'show']
     map( self.makeAction, actions )
+    
+    # close the dictionary after using it
+    self.dct.close()
 
-    with open( self.jsonFile, "w" ) as f:
-      f.write(json.dumps( self.dct ))
-
+  # some dynamic magic
   def makeAction(self, act):
     value = getattr( self.options, act  )
     if  value != "":
@@ -31,19 +29,28 @@ class Dictionary:
   def add ( self, key  ):
     scrap ( key )
     value = raw_input("Enter meaning:\n")
-    self.dct[key] = value
-
-    # p = re.compile( word.lower() + "*" )
-    # lowKeys = map ( lambda x: x.lower(), self.dct.keys() )
-    # matchingKeys = filter ( p.match, lowKeys )
+    self.dct.add( key, value )
 
   def search ( self, word ):
-    # find all matches
-    p = re.compile( word + "*" )
-    matchingKeys = filter ( p.match, self.dct.keys() )
-    sortedKeys = sorted ( matchingKeys )
+    sortedKeys = self.dct.search( word ) 
     map ( self.printWord, sortedKeys )
-    
+
+  def show ( self, word ):
+    keys = self.dct.dct.keys()
+    for x in enumerate(keys):
+      print "%d) %s: %s" %( x[0], x[1] , self.dct.value(x[1]))
+
+  def riddle ( self, empty ):
+    key =  self.dct.randomWord()
+    print "What is the meaning of?:"
+    print self.dct.inputKey( key )
+    raw_input()
+    print "Dictionary meaning:"
+    print self.dct.value( key )
+    right = raw_input("Did you get it right?\n")
+    if len(right) > 0:
+      self.dct.increaseCount( key )
+
   def printWord( self, word ):
     print word + ": ",
     print self.dct[word]
@@ -64,8 +71,10 @@ class Dictionary:
     group.add_option("-d" , "--define"      , type="string" , default="", help="Lookup def of word", dest="define")
     group.add_option("-s" , "--search"      , type="string" , default="", help="Search for a word" , dest="search")
     group.add_option("-a" , "--add"         , type="string" , default="", help="Add a word"        , dest="add")
+    group.add_option("-r" , "--riddle"      , type="string" , default="", help="Do you know this?" , dest="riddle")
+    group.add_option("-o" , "--show"        , type="string" , default="", help="Show words "       , dest="show")
     parser.add_option_group( group)
     self.options, self.args = parser.parse_args()
 
 if __name__ == "__main__":
-  dc = Dictionary()
+  cl = Controller()
