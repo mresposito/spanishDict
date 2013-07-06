@@ -4,7 +4,7 @@ from model    import Dictionary
 
 class Controller:
 
-  jsonFile = "/Users/mre/myDict/dict.json"
+  jsonFile = Dictionary.jsonFile
 
   def __init__(self):
     self.dct = Dictionary()

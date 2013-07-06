@@ -9,7 +9,7 @@ COUNT = "count"
 
 class Dictionary:
 
-  jsonFile = "/Users/mre/myDict/dict.json"
+  jsonFile = os.path.join(os.path.dirname(__file__), "dict.json")
   dct = {}
 
   def __init__(self):
